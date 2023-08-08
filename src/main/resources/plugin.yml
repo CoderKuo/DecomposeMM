@@ -1,0 +1,6 @@
+name: DecomposeMM
+version: '${project.version}'
+main: com.dakuo.decomposemm.DecomposeMM
+commands:
+  fj:
+    description: Main Command

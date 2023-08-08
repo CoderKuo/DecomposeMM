@@ -1,0 +1,22 @@
+gui:
+  title: "分解菜单"
+  size: 54
+  button:
+    slot: 53
+    name: "&c&l点击分解"
+    material:  ANVIL
+    Lore:
+      - "{status}"
+  status:
+    start: "&c点击分解"
+    ready: "&6请再点击一次确认分解..."
+
+message:
+  success: "§a分解成功 {1} 件,失败 {2} 件."
+  # 分解获得金币提醒，由于设计原因可能会造成刷屏，请酌情开启
+  money:
+    use: false
+    msg: "§6你通过分解获得了§f{1}元§6金币"
+
+# 关闭gui自动分解
+autoDecompose: false
