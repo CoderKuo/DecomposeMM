@@ -5,6 +5,7 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import org.bukkit.event.Listener;
@@ -12,16 +13,20 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DInventory implements Listener {
     private final Inventory inventory;
     private final DecomposeMM plugin;
     public Player player;
 
-    public boolean isClicked = false;
+    public Map<Integer,String> slotsMap;
 
-    public final int buttonSlot;
+    public boolean isClicked = false;
 
     public DInventory(Player player) {
         plugin = DecomposeMM.getPlugin(DecomposeMM.class);
@@ -29,9 +34,83 @@ public class DInventory implements Listener {
         String title = gui.getString("title").replace("&", "§");
         int size = gui.getInt("size");
         inventory = Bukkit.createInventory(new DInventoryHolder(this), size, title);
-        buttonSlot = gui.getInt("button.slot");
-        inventory.setItem(buttonSlot, getButton());
+
+        List<String> slots = gui.getStringList("slots");
+        slotsMap = getSlotsMap(slots);
+
+        slotsMap.forEach((integer, s) -> {
+            ItemStack itemStackFormSlot = getItemStackFromSlot(s);
+            inventory.setItem(integer,itemStackFormSlot);
+        });
+
         this.player = player;
+    }
+
+    public void updateClick(){
+
+    }
+
+    private ItemStack getItemStackReadyFromSlot(){
+
+    }
+    private ItemStack getItemStackFromSlot(String slot){
+        ConfigurationSection gui = plugin.getGui();
+        ConfigurationSection items = gui.getConfigurationSection("items."+slot);
+        return getItemStackFromSection(items);
+    }
+
+    private ItemStack getItemStackFromSection(ConfigurationSection section){
+        Material material = Material.getMaterial(section.getString("material"));
+        if (material == null){
+            material = Material.AIR;
+        }
+        ItemStack itemStack = new ItemStack(material);
+        ItemMeta itemMeta = itemStack.hasItemMeta() ? itemStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(material);
+        section.getKeys(false).forEach(key->{
+            switch (key) {
+                case "name":
+                    itemMeta.setDisplayName(section.getString("name").replace("&", "§"));
+                case "lore":
+                    List<String> lore = section.getStringList("lore");
+                    lore.replaceAll(l -> l.replace("&", "§"));
+                    itemMeta.setLore(lore);
+                case "data":
+                    int data = section.getInt("data", -1);
+                    if (data != -1) {
+                        itemStack.setDurability((short) data);
+                    }
+                case "customModelData":
+                    if (items.contains("customModelData")){
+                        int customModelData = section.getInt("customModelData");
+                        itemMeta.setCustomModelData(customModelData);
+                    }
+            }
+        });
+        itemStack.setItemMeta(itemMeta);
+        return itemStack;
+    }
+
+    private Map<Integer,String> getSlotsMap(List<String> slots){
+        Map<Integer, String> map = new HashMap<>();
+        int currentIndex = 0;
+
+        for (String s : slots) {
+            for (int i1 = 0; i1 < s.length(); i1++) {
+                char currentChar = s.charAt(i1);
+
+                if (currentChar == '`') {
+                    int endIndex = s.indexOf('`', i1 + 1);
+                    String buttonText = s.substring(i1+1, endIndex);
+                    map.put(currentIndex, buttonText);
+                    currentIndex++;
+                    i1 = endIndex;
+                } else {
+                    map.put(currentIndex, String.valueOf(currentChar));
+                    currentIndex++;
+                }
+            }
+        }
+        return map;
     }
 
     public void open() {

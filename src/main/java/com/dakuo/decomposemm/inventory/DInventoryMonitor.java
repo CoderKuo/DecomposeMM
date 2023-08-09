@@ -14,15 +14,11 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class DInventoryMonitor implements Listener {
-    private Inventory inventory;
+    private DInventory inventory;
     private Player player;
-    private int buttonSlot;
 
 
     @EventHandler
@@ -31,11 +27,16 @@ public class DInventoryMonitor implements Listener {
         if (!checkInventory(inventory)){
             return;
         }
-        this.inventory = inventory;
         this.player = (Player) event.getPlayer();
         DInventoryHolder holder = (DInventoryHolder) inventory.getHolder();
-        this.buttonSlot = holder.inventoryInstance.buttonSlot;
+        this.inventory = holder.inventoryInstance;
+
     }
+
+    public boolean isButton(int slot){
+        return Objects.equals(inventory.slotsMap.get(slot), "b");
+    }
+
 
     @EventHandler
     public void monitor(InventoryClickEvent event){
@@ -44,18 +45,20 @@ public class DInventoryMonitor implements Listener {
             return;
         }
 
-        if (event.getRawSlot() != buttonSlot) {
+        if (!isButton(event.getRawSlot())) {
             return;
         }
-        DInventoryHolder holder = (DInventoryHolder) inventory.getHolder();
         event.setCancelled(true);
-        if (!holder.inventoryInstance.isClicked) {
-            holder.inventoryInstance.isClicked = true;
-            clickedInventory.setItem(buttonSlot, holder.inventoryInstance.getButton());
+        if (!inventory.isClicked) {
+            inventory.isClicked = true;
+            inventory.updateClick();
+
             return;
         }
         decompose(holder);
     }
+
+
 
     public void decompose(DInventoryHolder holder){
         List<ItemStack> items = getItems();

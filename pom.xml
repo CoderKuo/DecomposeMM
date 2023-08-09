@@ -70,24 +70,24 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.destroystokyo.paper</groupId>
-            <artifactId>paper-api</artifactId>
-            <version>1.12.2-R0.1-SNAPSHOT</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.19-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>MythicMobs</groupId>-->
-<!--            <artifactId>MythicMobs</artifactId>-->
-<!--            <version>4.0</version>-->
-<!--            <scope>system</scope>-->
-<!--            <systemPath>${basedir}/MythicMobs-4.10.1.jar</systemPath>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>MythicMobs5</groupId>
             <artifactId>MythicMobs5</artifactId>
             <version>5.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/[M][怪物]MythicMobs-5.1.0.jar</systemPath>
+            <systemPath>${basedir}/MythicMobs-5.3.5.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>MythicMobs4</groupId>
+            <artifactId>MythicMobs4</artifactId>
+            <version>4.0</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/MythicMobs-4.9.0.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.github.MilkBowl</groupId>
