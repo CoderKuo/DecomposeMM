@@ -47,17 +47,31 @@ public class DInventoryMonitor implements Listener {
             return;
         }
 
-        if (!isButton(event.getRawSlot())) {
-            return;
-        }
-        event.setCancelled(true);
-        if (!inventory.isClicked) {
-            inventory.isClicked = true;
-            inventory.updateClick();
+        if (isButton(event.getRawSlot())){
+            event.setCancelled(true);
+            if (!inventory.isClicked) {
+                inventory.isClicked = true;
+                inventory.updateClick();
 
+                return;
+            }
+            decompose((DInventoryHolder) clickedInventory.getHolder());
+        }
+
+        if (canClicked(event.getRawSlot())){
+            event.setCancelled(true);
             return;
         }
-        decompose((DInventoryHolder) clickedInventory.getHolder());
+
+
+
+
+
+    }
+
+    public boolean canClicked(Integer index){
+        String o = inventory.slotsMap.getOrDefault(index, "o");
+        return (!o.equals(" ") && !o.equals("o"));
     }
 
 
@@ -70,9 +84,6 @@ public class DInventoryMonitor implements Listener {
         int fail = 0;
         while (iterator.hasNext()) {
             ItemStack next = iterator.next();
-            if (next == holder.inventoryInstance.getButton()) {
-                continue;
-            }
             List<ItemStack> itemStacks = DataService.getInstance().toItems(next,player);
             if (itemStacks != null) {
                 resultItems.addAll(itemStacks);
@@ -87,6 +98,7 @@ public class DInventoryMonitor implements Listener {
         DecomposeMM plugin = DecomposeMM.getPlugin(DecomposeMM.class);
         this.player.sendMessage(plugin.getConfig().getString("message.success").replace("{1}", String.valueOf(success)).replace("{2}", String.valueOf(fail)).replace("&","§"));
         holder.inventoryInstance.isClicked = false;
+        inventory.updateClick();
     }
 
 
@@ -98,7 +110,8 @@ public class DInventoryMonitor implements Listener {
                 decompose((DInventoryHolder) e.getInventory().getHolder());
             }else {
                 Map<Integer,ItemStack> items = getItems();
-                giveItem((List<ItemStack>) items.values());
+                List<ItemStack> itemsList = new ArrayList<>(items.values());
+                giveItem(itemsList);
             }
         }
     }

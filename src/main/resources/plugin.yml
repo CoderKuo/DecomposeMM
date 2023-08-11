@@ -1,6 +1,7 @@
 name: DecomposeMM
 version: '${project.version}'
 main: com.dakuo.decomposemm.DecomposeMM
+softdepend: [MythicMobs]
 commands:
   fj:
     description: Main Command

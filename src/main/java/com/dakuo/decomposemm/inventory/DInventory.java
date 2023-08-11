@@ -1,7 +1,6 @@
 package com.dakuo.decomposemm.inventory;
 
 import com.dakuo.decomposemm.DecomposeMM;
-import jdk.internal.joptsimple.internal.Strings;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -12,12 +11,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DInventory implements Listener {
@@ -37,37 +34,50 @@ public class DInventory implements Listener {
         String title = gui.getString("title").replace("&", "§");
         int size = gui.getInt("size");
         inventory = Bukkit.createInventory(new DInventoryHolder(this), size, title);
-
-        List<String> slots = gui.getStringList("slots");
-        slotsMap = getSlotsMap(slots);
-
-        slotsMap.forEach((integer, s) -> {
-            if (!s.equals("o") && !Strings.isNullOrEmpty(s)){
-                ItemStack itemStackFormSlot = getItemStackFromSlot(s);
-                itemStackMap.put(s,itemStackFormSlot);
-                inventory.setItem(integer,itemStackFormSlot);
-            }
-        });
+        updateClick();
 
         this.player = player;
     }
 
     public void updateClick(){
-        Map<String,ItemStack> items = new HashMap<>();
-        itemStackMap.forEach((s, itemStack) -> {
-            items.put(s,getItemStackReadyFromSlot(s,itemStack));
-        });
-        slotsMap.forEach((integer, s) -> {
-            ItemStack orDefault = items.getOrDefault(s, new ItemStack(Material.AIR));
-            inventory.setItem(integer,orDefault);
-            player.openInventory(inventory);
-        });
+        if (isClicked){
+            Map<String,ItemStack> items = new HashMap<>();
+            itemStackMap.forEach((s, itemStack) -> {
+                items.put(s,getItemStackReadyFromSlot(s,itemStack));
+            });
+            slotsMap.forEach((integer, s) -> {
+                if (!s.equals("o") && !s.equals(" ")) {
+                    ItemStack orDefault = items.getOrDefault(s, new ItemStack(Material.AIR));
+                    inventory.setItem(integer, orDefault);
+                }
+            });
+        }else{
+            List<String> slots = plugin.getGui().getStringList("slots");
+            slotsMap = getSlotsMap(slots);
+
+            slotsMap.forEach((integer, s) -> {
+                if (!s.equals("o") && !s.equals(" ")){
+                    ItemStack itemStackFormSlot = getItemStackFromSlot(s);
+                    itemStackMap.put(s,itemStackFormSlot);
+                    inventory.setItem(integer,itemStackFormSlot);
+                }
+            });
+        }
+
     }
 
     private ItemStack getItemStackReadyFromSlot(String slot,ItemStack itemStack){
         ConfigurationSection gui = plugin.getGui();
         ConfigurationSection readySection = gui.getConfigurationSection("items." + slot + ".ready");
         if (readySection == null) return itemStack;
+        if (readySection.contains("material")){
+            Material material = Material.getMaterial(readySection.getString("material"));
+            if (material == null){
+                material = Material.AIR;
+            }
+            itemStack.setType(material);
+        }
+
         return handleItemMeta(itemStack,readySection);
     }
 
@@ -99,7 +109,9 @@ public class DInventory implements Listener {
                 case "data":
                     int data = section.getInt("data", -1);
                     if (data != -1) {
-                        itemStack.setDurability((short) data);
+                        if (itemMeta instanceof Damageable){
+                            ((Damageable) itemMeta).setDamage(data);
+                        }
                     }
                 case "customModelData":
                     if (section.contains("customModelData")){

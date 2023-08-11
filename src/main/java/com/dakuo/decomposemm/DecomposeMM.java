@@ -39,7 +39,10 @@ public final class DecomposeMM extends JavaPlugin {
         } else {
             Bukkit.getConsoleSender().sendMessage("§f[§e分解§f] §c§l初始化Vault失败,请检查是否缺少经济插件.");
         }
-
+        boolean b = loadMythicMobs();
+        if (!b){
+            Bukkit.getConsoleSender().sendMessage("§f[§e分解§f] §c§l初始化MythicMobs失败,如果需要使用mm请检查是否正确安装.");
+        }
         long endTime = System.currentTimeMillis();
         Bukkit.getConsoleSender().sendMessage("§f[§e分解§f] §a插件已启动,共耗时 §f"+(endTime-startTime)+" §ams.");
     }
@@ -69,21 +72,22 @@ public final class DecomposeMM extends JavaPlugin {
         return autoDecompose;
     }
 
-    public void loadMythicMobs(){
+    public boolean loadMythicMobs(){
         try{
             Class.forName("io.lumine.xikage.mythicmobs.MythicMobs");
             iMythicMobs = new MythicMobs4();
-            Bukkit.getConsoleSender().sendMessage("&6&l MythicMobs4 加载成功！");
+            Bukkit.getConsoleSender().sendMessage("§f[§e分解§f] §aMythicMobs4 加载成功！");
+            return true;
         }catch (Exception e){
         }
 
         try{
             Class.forName("io.lumine.mythic.bukkit.MythicBukkit");
             iMythicMobs = new MythicMobs5();
-            Bukkit.getConsoleSender().sendMessage("&6&l MythicMobs5 加载成功！");
+            Bukkit.getConsoleSender().sendMessage("§f[§e分解§f] §aMythicMobs5 加载成功！");
+            return true;
         }catch (Exception e){
         }
-
-
+        return false;
     }
 }
