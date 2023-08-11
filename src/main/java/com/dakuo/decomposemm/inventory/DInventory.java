@@ -1,6 +1,7 @@
 package com.dakuo.decomposemm.inventory;
 
 import com.dakuo.decomposemm.DecomposeMM;
+import jdk.internal.joptsimple.internal.Strings;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -26,6 +27,8 @@ public class DInventory implements Listener {
 
     public Map<Integer,String> slotsMap;
 
+    private Map<String,ItemStack> itemStackMap = new HashMap<>();
+
     public boolean isClicked = false;
 
     public DInventory(Player player) {
@@ -39,20 +42,36 @@ public class DInventory implements Listener {
         slotsMap = getSlotsMap(slots);
 
         slotsMap.forEach((integer, s) -> {
-            ItemStack itemStackFormSlot = getItemStackFromSlot(s);
-            inventory.setItem(integer,itemStackFormSlot);
+            if (!s.equals("o") && !Strings.isNullOrEmpty(s)){
+                ItemStack itemStackFormSlot = getItemStackFromSlot(s);
+                itemStackMap.put(s,itemStackFormSlot);
+                inventory.setItem(integer,itemStackFormSlot);
+            }
         });
 
         this.player = player;
     }
 
     public void updateClick(){
-
+        Map<String,ItemStack> items = new HashMap<>();
+        itemStackMap.forEach((s, itemStack) -> {
+            items.put(s,getItemStackReadyFromSlot(s,itemStack));
+        });
+        slotsMap.forEach((integer, s) -> {
+            ItemStack orDefault = items.getOrDefault(s, new ItemStack(Material.AIR));
+            inventory.setItem(integer,orDefault);
+            player.openInventory(inventory);
+        });
     }
 
-    private ItemStack getItemStackReadyFromSlot(){
-
+    private ItemStack getItemStackReadyFromSlot(String slot,ItemStack itemStack){
+        ConfigurationSection gui = plugin.getGui();
+        ConfigurationSection readySection = gui.getConfigurationSection("items." + slot + ".ready");
+        if (readySection == null) return itemStack;
+        return handleItemMeta(itemStack,readySection);
     }
+
+
     private ItemStack getItemStackFromSlot(String slot){
         ConfigurationSection gui = plugin.getGui();
         ConfigurationSection items = gui.getConfigurationSection("items."+slot);
@@ -64,8 +83,11 @@ public class DInventory implements Listener {
         if (material == null){
             material = Material.AIR;
         }
-        ItemStack itemStack = new ItemStack(material);
-        ItemMeta itemMeta = itemStack.hasItemMeta() ? itemStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(material);
+        return handleItemMeta(new ItemStack(material), section);
+    }
+
+    private ItemStack handleItemMeta(ItemStack itemStack,ConfigurationSection section){
+        ItemMeta itemMeta = itemStack.hasItemMeta() ? itemStack.getItemMeta() : Bukkit.getItemFactory().getItemMeta(itemStack.getType());
         section.getKeys(false).forEach(key->{
             switch (key) {
                 case "name":
@@ -80,7 +102,7 @@ public class DInventory implements Listener {
                         itemStack.setDurability((short) data);
                     }
                 case "customModelData":
-                    if (items.contains("customModelData")){
+                    if (section.contains("customModelData")){
                         int customModelData = section.getInt("customModelData");
                         itemMeta.setCustomModelData(customModelData);
                     }
@@ -145,6 +167,8 @@ public class DInventory implements Listener {
 
         return item;
     }
+
+    public Inventory getInventory(){return inventory;}
 
 
 }

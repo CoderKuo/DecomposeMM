@@ -3,6 +3,9 @@ package com.dakuo.decomposemm;
 import com.dakuo.decomposemm.inventory.DInventory;
 import com.dakuo.decomposemm.inventory.DInventoryMonitor;
 import com.dakuo.decomposemm.service.DataService;
+import com.dakuo.decomposemm.service.mythic.IMythicMobs;
+import com.dakuo.decomposemm.service.mythic.MythicMobs4;
+import com.dakuo.decomposemm.service.mythic.MythicMobs5;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -17,6 +20,8 @@ public final class DecomposeMM extends JavaPlugin {
     private ConfigurationSection gui;
     private boolean autoDecompose = false;
     public static Economy economy = null;
+
+    public IMythicMobs iMythicMobs = null;
 
     @Override
     public void onEnable() {
@@ -62,5 +67,23 @@ public final class DecomposeMM extends JavaPlugin {
 
     public boolean getAutoDecompose(){
         return autoDecompose;
+    }
+
+    public void loadMythicMobs(){
+        try{
+            Class.forName("io.lumine.xikage.mythicmobs.MythicMobs");
+            iMythicMobs = new MythicMobs4();
+            Bukkit.getConsoleSender().sendMessage("&6&l MythicMobs4 加载成功！");
+        }catch (Exception e){
+        }
+
+        try{
+            Class.forName("io.lumine.mythic.bukkit.MythicBukkit");
+            iMythicMobs = new MythicMobs5();
+            Bukkit.getConsoleSender().sendMessage("&6&l MythicMobs5 加载成功！");
+        }catch (Exception e){
+        }
+
+
     }
 }

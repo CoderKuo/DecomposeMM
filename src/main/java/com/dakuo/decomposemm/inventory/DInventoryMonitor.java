@@ -3,6 +3,7 @@ package com.dakuo.decomposemm.inventory;
 import com.dakuo.decomposemm.DecomposeMM;
 import com.dakuo.decomposemm.service.DataService;
 import org.bukkit.Material;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -15,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public class DInventoryMonitor implements Listener {
     private DInventory inventory;
@@ -55,14 +57,14 @@ public class DInventoryMonitor implements Listener {
 
             return;
         }
-        decompose(holder);
+        decompose((DInventoryHolder) clickedInventory.getHolder());
     }
 
 
 
     public void decompose(DInventoryHolder holder){
-        List<ItemStack> items = getItems();
-        Iterator<ItemStack> iterator = items.iterator();
+        Map<Integer, ItemStack> items = getItems();
+        Iterator<ItemStack> iterator = items.values().iterator();
         List<ItemStack> resultItems = new ArrayList<>();
         int success = 0;
         int fail = 0;
@@ -80,12 +82,11 @@ public class DInventoryMonitor implements Listener {
             resultItems.add(next);
             fail += next.getAmount();
         }
-        clear();
+        clear(items);
         giveItem(resultItems);
         DecomposeMM plugin = DecomposeMM.getPlugin(DecomposeMM.class);
         this.player.sendMessage(plugin.getConfig().getString("message.success").replace("{1}", String.valueOf(success)).replace("{2}", String.valueOf(fail)).replace("&","§"));
         holder.inventoryInstance.isClicked = false;
-        inventory.setItem(buttonSlot, holder.inventoryInstance.getButton());
     }
 
 
@@ -96,8 +97,8 @@ public class DInventoryMonitor implements Listener {
             if (DecomposeMM.getPlugin(DecomposeMM.class).getAutoDecompose()){
                 decompose((DInventoryHolder) e.getInventory().getHolder());
             }else {
-                List<ItemStack> items = getItems();
-                giveItem(items);
+                Map<Integer,ItemStack> items = getItems();
+                giveItem((List<ItemStack>) items.values());
             }
         }
     }
@@ -111,24 +112,27 @@ public class DInventoryMonitor implements Listener {
 
 
 
-    private List<ItemStack> getItems() {
-        List<ItemStack> itemStacks = new ArrayList<>();
-        for (int i = 0; i < inventory.getSize(); i++) {
-            ItemStack item = inventory.getItem(i);
-            if (item != null && !item.getType().equals(Material.AIR) && i != buttonSlot) {
-                itemStacks.add(item);
+    private Map<Integer,ItemStack> getItems() {
+        Map<Integer,ItemStack> itemStacks = new HashMap<>();
+//        for (int i = 0; i < inventory.getInventory().getSize(); i++) {
+//            ItemStack item = inventory.getInventory().getItem(i);
+//            if (item != null && !item.getType().equals(Material.AIR) && i != buttonSlot) {
+//                itemStacks.add(item);
+//            }
+//        }
+        inventory.slotsMap.entrySet().stream().filter(integerStringEntry -> {
+            return integerStringEntry.getValue().equals("o") || Objects.equals(integerStringEntry.getValue(), " ");
+        }).forEach(integerStringEntry -> {
+            ItemStack item = inventory.getInventory().getItem(integerStringEntry.getKey());
+            if (item != null && !item.getType().equals(Material.AIR)) {
+                itemStacks.put(integerStringEntry.getKey(),item);
             }
-        }
+        });
         return itemStacks;
     }
 
-    public void clear() {
-        for (int i = 0; i < inventory.getSize(); i++) {
-            if (i == buttonSlot) {
-                continue;
-            }
-            inventory.clear(i);
-        }
+    public void clear(Map<Integer,ItemStack> items) {
+        items.keySet().forEach(inventory.getInventory()::clear);
     }
 
 
