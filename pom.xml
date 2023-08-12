@@ -66,6 +66,10 @@
             <id>minecraft</id>
             <url>https://crystal.app.lss233.com/repositories/minecraft</url>
         </repository>
+        <repository>
+            <id>irepo</id>
+            <url>https://r.irepo.space/maven/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -93,6 +97,12 @@
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>pers.neige.neigeitems</groupId>
+            <artifactId>NeigeItems</artifactId>
+            <version>1.15.5</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

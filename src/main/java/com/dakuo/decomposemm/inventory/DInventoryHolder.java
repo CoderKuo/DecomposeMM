@@ -12,6 +12,6 @@ public class DInventoryHolder implements InventoryHolder {
 
     @Override
     public Inventory getInventory() {
-        return null;
+        return inventoryInstance.getInventory();
     }
 }

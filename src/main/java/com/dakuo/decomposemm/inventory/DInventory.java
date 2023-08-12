@@ -109,8 +109,12 @@ public class DInventory implements Listener {
                 case "data":
                     int data = section.getInt("data", -1);
                     if (data != -1) {
-                        if (itemMeta instanceof Damageable){
-                            ((Damageable) itemMeta).setDamage(data);
+                        if (canUseDamage()) {
+                            if (itemMeta instanceof Damageable) {
+                                ((Damageable) itemMeta).setDamage(data);
+                            }
+                        }else{
+                            itemStack.setDurability((short) data);
                         }
                     }
                 case "customModelData":
@@ -122,6 +126,15 @@ public class DInventory implements Listener {
         });
         itemStack.setItemMeta(itemMeta);
         return itemStack;
+    }
+
+    private boolean canUseDamage(){
+        try{
+            Class.forName("org.bukkit.inventory.meta.Damageable");
+            return true;
+        }catch (Exception e){
+        }
+        return false;
     }
 
     private Map<Integer,String> getSlotsMap(List<String> slots){
@@ -149,35 +162,6 @@ public class DInventory implements Listener {
 
     public void open() {
         player.openInventory(inventory);
-    }
-
-    public ItemStack getButton() {
-        ItemStack item = null;
-        ConfigurationSection gui = plugin.getGui();
-        ConfigurationSection button = gui.getConfigurationSection("button");
-        String name = button.getString("name").replace("&", "§");
-        String material = button.getString("material");
-        List<String> lore = button.getStringList("Lore");
-        lore.replaceAll((a) -> a.replace("&", "§"));
-        ConfigurationSection status = gui.getConfigurationSection("status");
-        if (!isClicked) {
-            String start = status.getString("start").replace("&", "§");
-            lore.replaceAll((a) -> a.replace("{status}", start));
-        } else {
-            String ready = status.getString("ready").replace("&", "§");
-            lore.replaceAll((a) -> a.replace("{status}", ready));
-        }
-        if (NumberUtils.isNumber(material)) {
-            item = new ItemStack(Material.getMaterial(material));
-        } else {
-            item = new ItemStack(Material.valueOf(material));
-        }
-        ItemMeta itemMeta = item.hasItemMeta() ? item.getItemMeta() : Bukkit.getItemFactory().getItemMeta(item.getType());
-        itemMeta.setDisplayName(name);
-        itemMeta.setLore(lore);
-        item.setItemMeta(itemMeta);
-
-        return item;
     }
 
     public Inventory getInventory(){return inventory;}

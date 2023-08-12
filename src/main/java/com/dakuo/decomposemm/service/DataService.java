@@ -2,10 +2,6 @@ package com.dakuo.decomposemm.service;
 
 
 import com.dakuo.decomposemm.DecomposeMM;
-import io.lumine.mythic.api.adapters.AbstractItemStack;
-import io.lumine.mythic.bukkit.MythicBukkit;
-import io.lumine.mythic.bukkit.adapters.BukkitItemStack;
-import io.lumine.mythic.core.items.MythicItem;
 import org.apache.commons.lang.math.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -151,15 +147,15 @@ public class DataService {
             }else{
                 amount = Integer.parseInt(s1[1]);
             }
-            Optional<MythicItem> item = MythicBukkit.inst().getItemManager().getItem(s1[0]);
-            boolean present = item.isPresent();
-            if (present) {
-                MythicItem mythicItem = item.get();
-                AbstractItemStack abstractItemStack = mythicItem.generateItemStack(amount);
-                BukkitItemStack bukkitItemStack = (BukkitItemStack) abstractItemStack;
-                ItemStack build = bukkitItemStack.build();
-                itemStacks.add(build);
-            }
+//            Optional<MythicItem> item = MythicBukkit.inst().getItemManager().getItem(s1[0]);
+//            boolean present = item.isPresent();
+//            if (present) {
+//                MythicItem mythicItem = item.get();
+//                AbstractItemStack abstractItemStack = mythicItem.generateItemStack(amount);
+//                BukkitItemStack bukkitItemStack = (BukkitItemStack) abstractItemStack;
+//                ItemStack build = bukkitItemStack.build();
+//                itemStacks.add(build);
+//            }
 
         }
         return  itemStacks;
